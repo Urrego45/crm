@@ -1,0 +1,63 @@
+modelo CVE
+
+uuid
+
+cve_id
+source_identifier
+published
+last_modified
+vuln_status
+
+modelo DESCRIPCION
+
+datos['vulnerabilities'][0]['description'][0-1]
+if description[0] === "en" 
+
+lang = (en, es)
+valor
+
+
+
+datos['vulnerabilities'][0]['metrics']['cvssMetricV2']
+
+modelo metrics
+
+source STRING
+type STRING CHOUICE - CREO
+
+Primary
+Secondary
+
+
+base_severity STRING CHOICE
+exploitability_score INT 
+impact_score INT
+
+
+modelo metricsData
+
+version STRING
+vector_string STRING
+access_vector STRING CHOICE - CREO
+
+"NETWORK"
+"ADJACENT_NETWORK"
+"LOCAL"
+
+access_complexity STRING CHOICE
+
+"HIGH"
+"MEDIUM"
+"LOW"
+
+authentication STRING
+confidentiality_impact STRING
+integrity_impact STRING
+availability_impact STRING
+base_score INT
+
+
+modelo VulnerabilidadesSolucionadas
+
+uuid UUID
+uuidVulnerabilidad UUID FK
