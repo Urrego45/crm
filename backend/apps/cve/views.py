@@ -15,6 +15,7 @@ from . import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Count
 
 
 class SincronizarVulnerabilidadesAPIView(APIView):
@@ -22,13 +23,8 @@ class SincronizarVulnerabilidadesAPIView(APIView):
     def post(self, request):
         vulnerabilidad = []
         descripcion = []
-        descripcion_completa = []
         metrica = []
         datoMetrica = []
-
-        c = 0
-        a = 0
-        b = 0
 
         url = 'https://services.nvd.nist.gov/rest/json/cves/2.0'
 
@@ -40,43 +36,39 @@ class SincronizarVulnerabilidadesAPIView(APIView):
             for vulnerabilidades in datos['vulnerabilities']:
 
                 vulnerabilidad.append(self.armar_vulnerabilidad(vulnerabilidades['cve']))
-                c += 1
-
-                if c == 5:
-                    break
             
 
             Vulnerabilidad.objects.bulk_create(vulnerabilidad, ignore_conflicts=True)
 
             for vulnerabilidades in datos['vulnerabilities']:
-                if a == 5:
-                    break
 
                 descripcion.append(self.armar_descripcion(vulnerabilidades['cve']))
 
                 metrica.append(self.armar_metrica(vulnerabilidades['cve']))
 
-                a += 1
+            lista_filtrada_descripcion = [x for x in descripcion if x is not None]
+            lista_filtrada_metrica = [x for x in metrica if x is not None]
 
-            if not None in descripcion: 
-                Descripcion.objects.bulk_create(descripcion)
+            
+            if lista_filtrada_descripcion.count(None) != len(lista_filtrada_descripcion):
+                Descripcion.objects.bulk_create(lista_filtrada_descripcion)
 
-            if not None in metrica:
-                Metrica.objects.bulk_create(metrica)
+            if lista_filtrada_metrica.count(None) != len(lista_filtrada_metrica):
 
+                Metrica.objects.bulk_create(lista_filtrada_metrica)
 
 
             for vulnerabilidades in datos['vulnerabilities']:
-                if b == 5:
-                    break
 
                 datoMetrica.append(self.armar_datos_metrica(vulnerabilidades['cve']))
                 
 
-                b += 1
 
-            if not None in datoMetrica:
-                DatoMetrica.objects.bulk_create(datoMetrica)
+            lista_filtrada_dato_metrica = [x for x in datoMetrica if x is not None]
+
+            if lista_filtrada_dato_metrica.count(None) != len(lista_filtrada_dato_metrica):
+
+                DatoMetrica.objects.bulk_create(lista_filtrada_dato_metrica)
             
             return Response({'Mensaje': 'Vulnerabilidades sincronizadas'}, status=status.HTTP_200_OK)
 
@@ -113,15 +105,14 @@ class SincronizarVulnerabilidadesAPIView(APIView):
                 lang=datos['descriptions'][0]['lang'],
                 value=datos['descriptions'][0]['value'],
             )
-            # for descripcion in datos['descriptions']:
-            #     descripciones.append(
-            #     )
 
-            return descripciones
 
     def armar_metrica(self, datos):
 
-        metricas = datos['metrics']['cvssMetricV2'][0]
+        if len(datos['metrics']) > 0:
+            metricas = datos['metrics']['cvssMetricV2'][0]
+        else:
+            return
 
         try:
             vulnerabilidad_instance = Vulnerabilidad.objects.get(cve_id=datos['id'])
@@ -144,7 +135,13 @@ class SincronizarVulnerabilidadesAPIView(APIView):
 
 
     def armar_datos_metrica(self, datos):
-        metricas = datos['metrics']['cvssMetricV2'][0]['cvssData']
+
+        if len(datos['metrics']) > 0:
+            metricas = datos['metrics']['cvssMetricV2'][0]['cvssData']
+        else:
+            return
+        
+        # metricas = datos['metrics']['cvssMetricV2'][0]['cvssData']
 
         try:
             metrica_instance = Metrica.objects.get(vulnerabilidad__cve_id=datos['id'])
@@ -169,11 +166,6 @@ class SincronizarVulnerabilidadesAPIView(APIView):
                 availability_impact=metricas['availabilityImpact'],
                 base_score=metricas['baseScore'],
             )
-
-        # return DatoMetrica(
-            
-        # )
-
 
 
 class VulnerabilidadesListAPIView(generics.ListAPIView):
@@ -214,6 +206,7 @@ class VulnerabilidadesSinSolucionListAPIView(generics.ListAPIView):
 class VulnerabilidadeSeveridadListAPIView(generics.ListAPIView):
 
     def get(self, request):
-        serializer = serializers.VulnerabilidadSeveridadListSerializer
-        conteo = serializer.get_conteo()
+        conteo = (
+            Metrica.objects.values('base_severity').annotate(cantidad=Count('uuid')).order_by('base_severity')
+        )
         return Response(conteo)

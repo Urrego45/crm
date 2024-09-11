@@ -6,7 +6,6 @@ from .models import (
     Metrica,
     DatoMetrica
 )
-from django.db.models import Count
 
 
 class VulnerabilidadListCreateSerializer(serializers.ModelSerializer):
@@ -43,6 +42,17 @@ class SolucionVulnerabilidadListSerializer(serializers.ModelSerializer):
         ]
 
 
+class DescripcionSinSolucionListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Descripcion
+        fields = [
+            'uuid',
+            'lang',
+            'value',
+        ]
+
+
 class DescripcionListSerializer(serializers.ModelSerializer):
     vulnerabilidad = VulnerabilidadListCreateSerializer()
 
@@ -72,10 +82,24 @@ class DatoMetricatSerializer(serializers.ModelSerializer):
             'base_score',
         ]
 
-class MetricaListSerializer(serializers.ModelSerializer):
-    vulnerabilidad = VulnerabilidadListCreateSerializer()
+class MetricaSinSolucionListSerializer(serializers.ModelSerializer):
     metricas_datos_metricas = DatoMetricatSerializer(many=True)
 
+
+    class Meta:
+        model = Metrica
+        fields = [
+            'uuid',
+            'source',
+            'type',
+            'base_severity',
+            'exploitability_score',
+            'impact_score',
+            'metricas_datos_metricas'
+        ]
+
+class MetricaListSerializer(serializers.ModelSerializer):
+    vulnerabilidad = VulnerabilidadListCreateSerializer()
 
     class Meta:
         model = Metrica
@@ -110,8 +134,8 @@ class DatoMetricaListSerializer(serializers.ModelSerializer):
 
 
 class VulnerabilidadCompletaListCreateSerializer(serializers.ModelSerializer):
-    descripciones_vulnerabilidades = DescripcionListSerializer(many=True)
-    metricas_vulnerabilidades = MetricaListSerializer(
+    descripciones_vulnerabilidades = DescripcionSinSolucionListSerializer(many=True)
+    metricas_vulnerabilidades = MetricaSinSolucionListSerializer(
         DatoMetricaListSerializer(),
         many=True
     )
@@ -128,10 +152,3 @@ class VulnerabilidadCompletaListCreateSerializer(serializers.ModelSerializer):
             'descripciones_vulnerabilidades',
             'metricas_vulnerabilidades',
         ]
-
-class VulnerabilidadSeveridadListSerializer(serializers.ModelSerializer):
-    def get_conteo():
-
-        return (
-            Metrica.objects.values('base_severity').annotate(cantidad=Count('uuid')).order_by('base_severity')
-        )
