@@ -38,3 +38,23 @@ El Token que da llevarlo al POSTMAN y agregarlo en `Authorization`. en `Auth Typ
 
 En el formulario que aparecerá a la derecha, ingresar el token dado y en `Header Prefix` escribir `Token`
 
+### Postman
+
+Link de postman https://www.postman.com/lunar-satellite-896921/workspace/prueba-crm/collection/23247546-33d4b65f-dabd-4a30-ac90-d0795b0c06d9?action=share&creator=23247546
+
+Rutas:
+api/cve/sincronizar/ => Sincronizar los datos de la API con la aplicacion.
+api/cve/vulnerabilidad/ => Consultar las vulnerabilidades registradas.
+api/cve/descripcion/ => Consultar las descripciones de las vulnerabilidades registradas.
+api/cve/metrica/ => Consultar las metricas de las vulnerabilidades registradas.
+api/cve/dato-metrica/ => Contultar los datos de lass metricas registrradas.
+api/cve/solucion-vulnerabilidad/ => Consultar las soluciones de las vulnerabilidades. ademas de crear las soluciones `{'vulnerabilidad': <uuid vulnerabilidad>}`.
+api/cve/vulnerabilidad-sin-soluciones/ => Consulta todas las vulnerabilidades sin solucion.
+api/cve/vulnerabilidad-severidad/ => Cuenta por cada severidad y devuelve una suma.
+
+
+
+
+
+
+
