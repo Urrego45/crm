@@ -14,6 +14,7 @@ class Vulnerabilidad(TimeStampedModel):
 
     cve_id = models.CharField(
         verbose_name="ID CVE",
+        unique=True,
         max_length=50
     )
 
@@ -55,14 +56,13 @@ class SolucionVulnerabilidad(TimeStampedModel):
     vulnerabilidad = models.ForeignKey(
         Vulnerabilidad,
         on_delete=models.CASCADE,
-        related_name='solucion_vulnerabilidad_vulnerabilidad',
+        related_name='soluciones_vulnerabilidades_vulnerabilidades',
         verbose_name="vulnerabilidad",
     )
 
     fecha_solucion = models.DateTimeField(
         auto_now_add=True
     )
-
 
     class Meta:
         verbose_name = "Vulnerabilidad solucionada"
@@ -81,7 +81,7 @@ class Descripcion(TimeStampedModel):
     vulnerabilidad = models.ForeignKey(
         Vulnerabilidad,
         on_delete=models.CASCADE,
-        related_name='descripcion_vulnerabilidad',
+        related_name='descripciones_vulnerabilidades',
         verbose_name="vulnerabilidad",
     )
 
@@ -111,7 +111,7 @@ class Metrica(TimeStampedModel):
     vulnerabilidad = models.ForeignKey(
         Vulnerabilidad,
         on_delete=models.CASCADE,
-        related_name='metrica_vulnerabilidad',
+        related_name='metricas_vulnerabilidades',
         verbose_name="vulnerabilidad",
     )
 
@@ -130,11 +130,11 @@ class Metrica(TimeStampedModel):
         max_length=50
     )
 
-    exploitability_score = models.PositiveSmallIntegerField(
+    exploitability_score = models.FloatField(
         verbose_name="Puntos de exploit",
     )
 
-    impact_score = models.PositiveSmallIntegerField(
+    impact_score = models.FloatField(
         verbose_name="Puntos de impacto",
     )
 
@@ -155,7 +155,7 @@ class DatoMetrica(TimeStampedModel):
     metrica = models.ForeignKey(
         Metrica,
         on_delete=models.CASCADE,
-        related_name='metrica_datos_metrica',
+        related_name='metricas_datos_metricas',
         verbose_name="metrica",
     )
 
@@ -198,7 +198,7 @@ class DatoMetrica(TimeStampedModel):
         max_length=30
     )
 
-    base_score = models.SmallIntegerField(
+    base_score = models.FloatField(
         verbose_name="Puntuacion base",
     )
 
